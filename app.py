@@ -5,9 +5,6 @@ from PIL import Image
 import tempfile
 import time
 
-# Initialization
-if 'key' not in st.session_state:
-    st.session_state['step_1'] = False
 
 st.set_page_config(
     page_title="Depth Planes", # => Quick reference - Streamlit
@@ -30,14 +27,15 @@ div.stButton > button:first-child {
 </style>
 """, unsafe_allow_html=True)
 
-# Inject custom CSS to hide the filename display
+# CSS personnalisé pour centrer le spinner
 st.markdown("""
-<style>
-div[data-testid="stFileUploader"] .uploadedFileName {
-    visibility: hidden;
-}
-</style>
-""", unsafe_allow_html=True)
+  <style>
+  div.stSpinner > div {
+    text-align:center;
+    align-items: center;
+    justify-content: center;
+  }
+  </style>""", unsafe_allow_html=True)
 
 ### Loading an image
 def load_image(image_file):
@@ -53,27 +51,45 @@ def save_temp_image(image):
             return tmp.name
     return None
 
-if st.session_state['step_1'] == False:
-    img_file = st.file_uploader(label='upload image', key='img1', label_visibility="collapsed") ### Load an image
-    st.session_state['step_1'] = True
-if st.session_state['step_1'] == True:
-    if img_file:
-        img_origin = load_image(img_file)
-        path_img1 = save_temp_image(img_origin)
-        st.success('Step one : your image is successfully uploaded!')
-        st.image(img_origin) ### Display the loaded image
-        if st.button("Compute depth map", key='button1'): ### Make depth prediction with API
-            # Afficher une barre de progression
-            progress_bar = st.progress(0)
-            for i in range(100):
-                # Mise à jour de la barre de progression
-                time.sleep(0.01)
-                progress_bar.progress(i + 1)
-            st.success('Congrats : the depth map has been computed!')
-            image = Image.open('/Users/leslierolland/code/soapoperator/depth_planes_website/Examples-of-depth-image.png')
-            path_img2=save_temp_image(image)
-            if img_file and image:
-                image_comparison(img1=path_img1, img2=path_img2, label1="Original Image", label2="Depth map") ### Display original image VS depth image
+# Création de placeholders
+file_uploader_placeholder = st.empty()
+image_display_placeholder = st.empty()
+button_placeholder = st.empty()
+
+### Téléchargement de l'image
+img_file = file_uploader_placeholder.file_uploader(label='upload image', key='img1', label_visibility="collapsed") ### Load an image
+
+
+if img_file:
+    img_origin = load_image(img_file)
+    path_img1 = save_temp_image(img_origin)
+    image_display_placeholder.image(img_origin, use_column_width=True) ### Display the loaded image
+
+    compute_button = button_placeholder.button("Compute depth map", key='button1')
+
+    if compute_button: ### Make depth prediction with API
+        # Nettoyer les placeholders
+        file_uploader_placeholder.empty()
+        button_placeholder.empty()
+        image_display_placeholder.empty()
+
+        # Afficher une barre de progression
+        with st.spinner('Wait for it...'):
+            time.sleep(5)
+            st.success('Done!')
+
+        # Chargement de l'image de comparaison --> ici le call API
+        image = Image.open('/Users/leslierolland/code/soapoperator/depth_planes_website/Examples-of-depth-image.png')
+        path_img2=save_temp_image(image)
+
+        # Nettoyer les placeholders
+        file_uploader_placeholder.empty()
+        button_placeholder.empty()
+        image_display_placeholder.empty()
+
+        # Display original image VS depth image
+        image_comparison(img1=path_img1, img2=path_img2, label1="Original Image", label2="Depth map")
+
 
 
 params = {}
@@ -82,15 +98,6 @@ params = {}
     #response = requests.get(depth_planes_api_url, params=params)
     # prediction = response.json()
     # pred = prediction['url']
-
-
-
-
-
-
-
-
-
 
 
 ### Display all the planes
