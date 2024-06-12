@@ -71,11 +71,6 @@ if img_file:
 
     compute_button = button_placeholder.button("Compute depth map", key='button1')
 
-    # API call for the depth map
-    img_data = img_file.getvalue() # To read file as bytes
-    response = requests.post(url=f'{url_api}depthmap?',files={'file':img_data})
-    response_img = Image.open(io.BytesIO(response.content))
-
     if compute_button: ### Make depth prediction with API
         # Nettoyer les placeholders
         button_placeholder.empty()
@@ -84,6 +79,11 @@ if img_file:
         # Afficher une barre de progression
         with st.spinner('Wait for it...'):
             time.sleep(5)
+
+        # API call for the depth map
+        img_data = img_file.getvalue() # To read file as bytes
+        response = requests.post(url=f'{url_api}depthmap?',files={'file':img_data})
+        response_img = Image.open(io.BytesIO(response.content))
 
         # Chargement de l'image de comparaison --> ici le call API
         image_depth = response_img
