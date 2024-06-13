@@ -10,7 +10,7 @@ import tempfile
 import time
 import io
 
-url_api = "http://127.0.0.1:8000/"
+url_api = "https://depth-planes-from-2d-drn2cgfvba-od.a.run.app/"
 
 st.set_page_config(
     page_title="Depth Planes", # => Quick reference - Streamlit
