@@ -42,13 +42,13 @@ div.stSpinner > div {
 }
 </style>""", unsafe_allow_html=True)
 
-# Création de placeholders
-file_uploader_placeholder = st.empty()
-image_display_placeholder = st.empty()
-button_placeholder = st.empty()
-image_comparision_placeholder = st.empty()
-button_placeholder_slice = st.empty()
-image_plans_placeholder = st.empty()
+def main():
+    # Initialisation des états
+    if 'path_origin' not in st.session_state:
+        st.session_state['path_origin'] = None
+    if 'path_depth' not in st.session_state:
+        st.session_state['path_depth'] = None
+
 
 if 'step_1' not in ss:
     ss.step_1 = True
@@ -63,30 +63,48 @@ if 'path_depth' not in ss:
 if 'depth_data' not in ss:
     ss.depth_data = None
 
-with st.container():
+    # Création de placeholders
+    file_uploader_placeholder = st.empty()
+    image_display_placeholder = st.empty()
+    button_placeholder = st.empty()
+    image_comparision_placeholder = st.empty()
+    image_plans_placeholder = st.empty()
 
-    if ss.step_1:
+    ### Téléchargement de l'image
+    img_file = file_uploader_placeholder.file_uploader(label='upload image', key='img1', label_visibility="collapsed") ### Load an image
 
-        ### Téléchargement de l'image
-        img_file = file_uploader_placeholder.file_uploader(label='upload image', key='img1', label_visibility="collapsed") ### Load an image
+    if img_file:
+        img_origin = load_image(img_file)
+        path_origin = save_temp_image(img_origin)
+        st.session_state['path_origin'] = path_origin
+        image_display_placeholder.image(img_origin, use_column_width=True)
+        file_uploader_placeholder.empty()
 
-        if img_file:
-            img_origin = load_image(img_file)
-            path_origin = save_temp_image(img_origin)
-            ss.path_origin = path_origin
-            image_display_placeholder.image(img_origin, use_column_width=True) ### Display the loaded image
+
+        compute_button = button_placeholder.button("Calculer la carte de profondeur", key='button1')
+
+        if compute_button:
             file_uploader_placeholder.empty()
+            button_placeholder.empty()
+            image_display_placeholder.empty()
 
-            compute_button = button_placeholder.button("Calculer la carte de profondeur", key='button1')
+            # Afficher une barre de progression
+            with st.spinner('Calcul en cours...'):
+                time.sleep(3)
 
-            if compute_button: ### Make depth prediction with API
-                # Nettoyer les placeholders
-                button_placeholder.empty()
-                image_display_placeholder.empty()
+            # Chargement de l'image de comparaison
+            img_depth_local = load_image('data/img_depth.jpg')
+            path_depth = save_temp_image(img_depth_local)
+            st.session_state['path_depth'] = path_depth
 
-                # Afficher une barre de progression
-                with st.spinner('Calcul en cours...'):
-                    time.sleep(5)
+            # Display original image VS depth image
+            if st.session_state['path_origin'] and st.session_state['path_depth']:
+                image_comp = image_comparison(
+                    img1=st.session_state['path_origin'],
+                    img2=st.session_state['path_depth'],
+                    label1="Image originale",
+                    label2="Carte de profondeur"
+                    )
 
                 response = requests.get(url=f'{url_api}')
                 print(response)
@@ -142,29 +160,14 @@ with st.container():
                     #         mime="application/zip"
                     #     )
 
-
-                    # print(ss.step_1,ss.step_2)
-                    #if st.button("Compute plans split", key='button2'):
-                    #     print('Go slice')
-                    #     print(ss.step_1,ss.step_2)
-                    #     ss.step_1 = False
-                    #     ss.step_2 = True
-
-                    #     # Afficher une barre de progression
-                    #     with st.spinner('Wait for it...'):
-                    #         time.sleep(5)
-
-                    #     st.markdown("Test 2")
-
-                    graph_3D = create_3D_plot(rgba_array=img_depth_masks)
-                    st.pyplot(graph_3D, use_container_width=True)
+    if 'path_depth' in st.session_state and st.session_state['path_depth']:
+        if button_placeholder.button("Découper les plans", key='button2'):
+            file_uploader_placeholder.empty()
+            button_placeholder.empty()
+            image_display_placeholder.empty()
+            image_display_placeholder.image('data/3D.jpg', use_column_width=True)
 
 
 
-with st.container():
-
-    # Reset the app state
-    if ss.step_2 and ss.finish:
-        if st.button("Reset"):
-            ss.step_1 = True
-            ss.step_2 = False
+if __name__ == "__main__":
+    main()
