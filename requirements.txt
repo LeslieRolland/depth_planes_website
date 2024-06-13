@@ -3,4 +3,4 @@ streamlit-image-comparison
 pillow
 plotly
 numpy
-opencv-python
+opencv-python-headless
