@@ -89,11 +89,11 @@ def create_mask_from_image2(x_array :str, y_path: str, y_mask_array):
 
 
 def create_3D_plot(rgba_array):
-    fig = plt.figure(figsize=(10, 20))
+    fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
 
     # Coordonnées y pour chaque image
-    y_positions = np.linspace(0, 400, 5)
+    y_positions = np.linspace(0, 400, rgba_array.shape[0])
 
     # Affichage de chaque image dans le graphe 3D
     for i, img in enumerate(reversed(rgba_array)):
