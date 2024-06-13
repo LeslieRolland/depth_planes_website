@@ -20,7 +20,6 @@ st.set_page_config(
 
 st.markdown("""
 <h1 style='text-align: center; color: black;'>Depth Planes from 2D</h1>
-<h4 style='text-align: center; color: grey;'>Upload your image</h4>
 """, unsafe_allow_html=True)
 
 ### CSS pour centrer le bouton
@@ -115,15 +114,15 @@ with st.container():
                     # print(img_depth_masks.shape)
                     # st.markdown(f"""{img_depth_masks}""")
 
-                    path_masks = {}
-                    for p in img_depth_masks:
-                        st.image(p)
-                        path_masks[f"plan{0}"] = array_to_image(p)[1]
+                    # path_masks = {}
+                    # for p in img_depth_masks:
+                    #     st.image(p)
+                    #     path_masks[f"plan{0}"] = array_to_image(p.astype(np.uint8))[1]
 
-                    st.markdown("""{path_masks}""")
+                    # st.markdown("""{path_masks}""")
 
                     # print(ss.step_1,ss.step_2)
-                    # if st.button("Compute plans split", key='button2'):
+                    #if st.button("Compute plans split", key='button2'):
                     #     print('Go slice')
                     #     print(ss.step_1,ss.step_2)
                     #     ss.step_1 = False
@@ -134,6 +133,9 @@ with st.container():
                     #         time.sleep(5)
 
                     #     st.markdown("Test 2")
+
+                    graph_3D = create_3D_plot(rgba_array=img_depth_masks)
+                    st.pyplot(graph_3D, use_container_width=False)
 
 
 
