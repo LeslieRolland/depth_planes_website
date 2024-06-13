@@ -4,3 +4,4 @@ pillow
 plotly
 numpy
 opencv-python
+matplotlib
