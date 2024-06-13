@@ -30,24 +30,17 @@ div.stButton > button:first-child {
     display: block;
     margin: 0 auto;
 }
-<style>
-    div.stdownload_button > button {
-        margin-top : 100px;
-        align-items: center;
-        justify-content: center;
+div.stdownload_button > button {
+    margin-top : 100px;
+    align-items: center;
+    justify-content: center;
 }
-</style>
-""", unsafe_allow_html=True)
-
-# CSS personnalisé pour centrer le spinner
-st.markdown("""
-  <style>
-  div.stSpinner > div {
+div.stSpinner > div {
     text-align:center;
     align-items: center;
     justify-content: center;
-  }
-  </style>""", unsafe_allow_html=True)
+}
+</style>""", unsafe_allow_html=True)
 
 def main():
     # Initialisation des états
@@ -55,6 +48,20 @@ def main():
         st.session_state['path_origin'] = None
     if 'path_depth' not in st.session_state:
         st.session_state['path_depth'] = None
+
+
+if 'step_1' not in ss:
+    ss.step_1 = True
+if 'step_2' not in ss:
+    ss.step_2 = False
+if 'finish' not in ss:
+    ss.finish = False
+if 'path_origin' not in ss:
+    ss.path_origin = ''
+if 'path_depth' not in ss:
+    ss.path_depth = ''
+if 'depth_data' not in ss:
+    ss.depth_data = None
 
     # Création de placeholders
     file_uploader_placeholder = st.empty()
@@ -99,6 +106,60 @@ def main():
                     label2="Carte de profondeur"
                     )
 
+                response = requests.get(url=f'{url_api}')
+                print(response)
+
+                # API call for the depth map
+                img_data = img_file.getvalue() # Image  origine as bytes
+                response = requests.post(url=f'{url_api}depthmap?',files={'file':img_data}) # Return bytes of depth map
+                img_depth_data = img_file.getvalue() # Image  origine as bytes
+                img_depth = Image.open(io.BytesIO(response.content))
+
+                # Chargement de l'image de comparaison --> ici le call API
+                path_depth = save_temp_image(img_depth)
+                ss.path_depth = path_depth
+
+                # Nettoyer les placeholders
+                file_uploader_placeholder.empty()
+                button_placeholder.empty()
+                image_display_placeholder.empty()
+
+                # Display original image VS depth image
+                if path_origin and path_depth:
+                    image_comparision_placeholder = image_comparison(img1=path_origin, img2=path_depth, label1="Original Image", label2="Depth map")
+                    image_data = img_to_array(path_origin)
+                    depth_data = img_to_array(path_depth)
+
+                    ss.depth_data = np.array(img_depth)
+
+
+                    depth_mask = create_mask_in_one(depth_data)
+                    # print(depth_mask.shape)
+                    # st.markdown(f"""{depth_mask}""")
+                    img_depth_masks = create_mask_from_image(image_data, depth_mask)
+                    # print(img_depth_masks.shape)
+                    # st.markdown(f"""{img_depth_masks}""")
+
+                    # path_masks = save_mask_image(img_depth_masks)
+                    # for p in img_depth_masks:
+                    #     st.image(p)
+                    #     path_masks[f"plan{0}"] = array_to_image(p.astype(np.uint8))[1]
+
+                    # # st.markdown("""{path_masks}""")
+
+                    # # for path in path_masks.values():
+                    # #     st.image(path)
+
+                    # zip_path = create_zip_file(path_masks)
+
+                    # with open(zip_path, "rb") as fp:
+                    #     st.download_button(
+                    #         label="Télécharger",
+                    #         data=fp,
+                    #         file_name="mask_images.zip",
+                    #         mime="application/zip"
+                    #     )
+
     if 'path_depth' in st.session_state and st.session_state['path_depth']:
         if button_placeholder.button("Découper les plans", key='button2'):
             file_uploader_placeholder.empty()
@@ -107,6 +168,6 @@ def main():
             image_display_placeholder.image('data/3D.jpg', use_column_width=True)
 
 
+
 if __name__ == "__main__":
     main()
-
