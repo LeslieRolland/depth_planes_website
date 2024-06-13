@@ -20,7 +20,6 @@ st.set_page_config(
 
 st.markdown("""
 <h1 style='text-align: center; color: black;'>Depth Planes from 2D</h1>
-<h4 style='text-align: center; color: grey;'>Upload your image</h4>
 """, unsafe_allow_html=True)
 
 ### CSS pour centrer le bouton
@@ -29,6 +28,12 @@ st.markdown("""
 div.stButton > button:first-child {
     display: block;
     margin: 0 auto;
+}
+<style>
+    div.stdownload_button > button {
+        margin-top : 100px;
+        align-items: center;
+        justify-content: center;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -67,7 +72,7 @@ with st.container():
     if ss.step_1:
 
         ### Téléchargement de l'image
-        img_file = file_uploader_placeholder.file_uploader(label='upload image', key='img1', label_visibility="collapsed") ### Load an image
+        img_file = file_uploader_placeholder.file_uploader(label='upload image', key='img1') #, label_visibility="collapsed") ### Load an image
 
         if img_file:
             img_origin = load_image(img_file)
@@ -115,15 +120,29 @@ with st.container():
                     # print(img_depth_masks.shape)
                     # st.markdown(f"""{img_depth_masks}""")
 
-                    path_masks = {}
+                    path_masks = save_mask_image(img_depth_masks)
                     for p in img_depth_masks:
                         st.image(p)
-                        path_masks[f"plan{0}"] = array_to_image(p)[1]
+                        path_masks[f"plan{0}"] = array_to_image(p.astype(np.uint8))[1]
 
-                    st.markdown("""{path_masks}""")
+                    # st.markdown("""{path_masks}""")
+
+                    # for path in path_masks.values():
+                    #     st.image(path)
+
+                    zip_path = create_zip_file(path_masks)
+
+                    with open(zip_path, "rb") as fp:
+                        st.download_button(
+                            label="Télécharger",
+                            data=fp,
+                            file_name="mask_images.zip",
+                            mime="application/zip"
+                        )
+
 
                     # print(ss.step_1,ss.step_2)
-                    # if st.button("Compute plans split", key='button2'):
+                    #if st.button("Compute plans split", key='button2'):
                     #     print('Go slice')
                     #     print(ss.step_1,ss.step_2)
                     #     ss.step_1 = False
@@ -134,6 +153,9 @@ with st.container():
                     #         time.sleep(5)
 
                     #     st.markdown("Test 2")
+
+                    graph_3D = create_3D_plot(rgba_array=img_depth_masks)
+                    st.pyplot(graph_3D, use_container_width=False)
 
 
 
