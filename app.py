@@ -29,24 +29,17 @@ div.stButton > button:first-child {
     display: block;
     margin: 0 auto;
 }
-<style>
-    div.stdownload_button > button {
-        margin-top : 100px;
-        align-items: center;
-        justify-content: center;
+div.stdownload_button > button {
+    margin-top : 100px;
+    align-items: center;
+    justify-content: center;
 }
-</style>
-""", unsafe_allow_html=True)
-
-# CSS personnalisé pour centrer le spinner
-st.markdown("""
-  <style>
-  div.stSpinner > div {
+div.stSpinner > div {
     text-align:center;
     align-items: center;
     justify-content: center;
-  }
-  </style>""", unsafe_allow_html=True)
+}
+</style>""", unsafe_allow_html=True)
 
 # Création de placeholders
 file_uploader_placeholder = st.empty()
@@ -66,6 +59,8 @@ if 'path_origin' not in ss:
     ss.path_origin = ''
 if 'path_depth' not in ss:
     ss.path_depth = ''
+if 'depth_data' not in ss:
+    ss.depth_data = None
 
 with st.container():
 
@@ -96,6 +91,7 @@ with st.container():
                 img_data = img_file.getvalue() # Image  origine as bytes
                 response = requests.post(url=f'{url_api}depthmap?',files={'file':img_data}) # Return bytes of depth map
                 img_depth_data = img_file.getvalue() # Image  origine as bytes
+
                 img_depth = Image.open(io.BytesIO(response.content))
 
                 # Chargement de l'image de comparaison --> ici le call API
@@ -113,7 +109,10 @@ with st.container():
                     image_data = img_to_array(path_origin)
                     depth_data = img_to_array(path_depth)
 
-                    depth_mask = create_mask_in_one(depth_data, 5)
+                    ss.depth_data = np.array(img_depth)
+
+
+                    depth_mask = create_mask_in_one(depth_data)
                     # print(depth_mask.shape)
                     # st.markdown(f"""{depth_mask}""")
                     img_depth_masks = create_mask_from_image(image_data, depth_mask)

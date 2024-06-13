@@ -4,16 +4,24 @@ from utils.data import *
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 
-def create_mask_in_one(y_pred, nb_mask: int =None) -> np.array:
+def create_mask_in_one(y_pred) -> np.array:
     """
     Function to create an array representing categorical mask
 
     Input:
     y_pred.shape -> (128,256,1)
     """
+    nb_mask = np.floor(y_pred.mean() - np.median(y_pred)).astype(int)
+    print('max', y_pred.max())
+    print('min', y_pred.min())
+    print('mean', y_pred.mean())
+    print('med', (np.median(y_pred)))
+    print('std', y_pred.std())
 
     slice_ = (np.max(y_pred)+1)/nb_mask
     img_dim = y_pred #reduce the dim
+    print(y_pred.max())
+    print(y_pred.min())
     mask = np.full((nb_mask,img_dim.shape[0],img_dim.shape[1]),-1)
 
     for i in np.arange(1, nb_mask+1):
@@ -41,7 +49,7 @@ def create_mask_from_image(x_array, y_mask_array):
     nb_mask = len(np.unique(y_mask_reshape))
 
     for i in range(nb_mask):
-        mask = (y_mask_reshape == i).astype(int)
+        mask = (y_mask_reshape == i).astype(np.uint8)
         mask_x = x_reshape * mask
         mask_array = np.append(mask_array, mask_x)
 
@@ -93,7 +101,7 @@ def create_3D_plot(rgba_array):
     ax = fig.add_subplot(111, projection='3d')
 
     # Coordonnées y pour chaque image
-    y_positions = np.linspace(0, 400, 5)
+    y_positions = np.linspace(0, 400, rgba_array.shape[0])
 
     # Affichage de chaque image dans le graphe 3D
     for i, img in enumerate(reversed(rgba_array)):
