@@ -97,7 +97,7 @@ def create_mask_from_image2(x_array :str, y_path: str, y_mask_array):
 
 
 def create_3D_plot(rgba_array):
-    fig = plt.figure(figsize=(10, 20))
+    fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
 
     # Coordonnées y pour chaque image
