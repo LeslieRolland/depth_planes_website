@@ -89,11 +89,11 @@ def create_mask_from_image2(x_array :str, y_path: str, y_mask_array):
 
 
 def create_3D_plot(rgba_array):
-    fig = plt.figure(figsize=(10, 20))
+    fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
 
     # Coordonnées y pour chaque image
-    y_positions = np.linspace(0, 400, 5)
+    y_positions = np.linspace(0, 400, rgba_array.shape[0])
 
     # Affichage de chaque image dans le graphe 3D
     for i, img in enumerate(reversed(rgba_array)):
@@ -101,7 +101,7 @@ def create_3D_plot(rgba_array):
         z = np.linspace(0, img.shape[0], img.shape[0])
         x, z = np.meshgrid(x, z)
         y = np.full(x.shape, y_positions[i])
-        ax.plot_surface(x, y, z, rstride=10, cstride=10, facecolors=img)
+        ax.plot_surface(x, y, z, rstride=5, cstride=5, facecolors=img)
 
     ax.grid(False)
     ax.invert_zaxis()
@@ -123,5 +123,5 @@ def create_3D_plot(rgba_array):
     ax.tick_params(axis='x', colors='white')  # Couleur des ticks en blanc (ou invisible)
     ax.tick_params(axis='y', colors='white')
     ax.tick_params(axis='z', colors='white')
-
+    fig.savefig("3D.jpg", dpi=150)
     return fig
