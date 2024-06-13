@@ -3,3 +3,5 @@ streamlit-image-comparison
 pillow
 plotly
 numpy
+opencv-python
+matplotlib
